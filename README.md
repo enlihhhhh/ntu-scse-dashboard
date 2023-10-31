@@ -1,6 +1,6 @@
 # SC4025 Developing Data Products Assignment 2: NTU SCSE dashboard
 
-This is a Streamlit web application that [displays the NTU SCSE Dashboard].
+This is a Streamlit web application that displays the NTU SCSE Dashboard.
 
 ## Demo App
 
