@@ -61,4 +61,3 @@ tzlocal==5.1
 urllib3==2.0.6
 validators==0.22.0
 wcwidth==0.2.8
-zipp @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_b71z79bye2/croot/zipp_1672387125902/work
