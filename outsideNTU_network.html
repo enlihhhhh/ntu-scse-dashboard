@@ -1,0 +1,250 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 1000px;
+                 background-color: #242424;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 1000px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "orange", "font": {"color": "white"}, "id": "Anwitaman Datta", "label": "Anwitaman Datta", "shape": "dot", "title": "Anwitaman Datta"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ekanshi Agrawal", "label": "Ekanshi Agrawal", "shape": "dot", "title": "Ekanshi Agrawal"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Hoang-Vu Dang", "label": "Hoang-Vu Dang", "shape": "dot", "title": "Hoang-Vu Dang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Fr\u00e9d\u00e9rique E. Oggier", "label": "Fr\u00e9d\u00e9rique E. Oggier", "shape": "dot", "title": "Fr\u00e9d\u00e9rique E. Oggier"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Michael J. Franklin", "label": "Michael J. Franklin", "shape": "dot", "title": "Michael J. Franklin"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Qi He", "label": "Qi He", "shape": "dot", "title": "Qi He"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Xin Liu", "label": "Xin Liu", "shape": "dot", "title": "Xin Liu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Pietro Michiardi", "label": "Pietro Michiardi", "shape": "dot", "title": "Pietro Michiardi"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Siddharth Singh", "label": "Siddharth Singh", "shape": "dot", "title": "Siddharth Singh"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Vivekanand Gopalkrishnan", "label": "Vivekanand Gopalkrishnan", "shape": "dot", "title": "Vivekanand Gopalkrishnan"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Marinho P. Barcellos", "label": "Marinho P. Barcellos", "shape": "dot", "title": "Marinho P. Barcellos"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Hani Salah", "label": "Hani Salah", "shape": "dot", "title": "Hani Salah"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Henning Schulzrinne", "label": "Henning Schulzrinne", "shape": "dot", "title": "Henning Schulzrinne"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jun Shao", "label": "Jun Shao", "shape": "dot", "title": "Jun Shao"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Sally Ang", "label": "Sally Ang", "shape": "dot", "title": "Sally Ang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Dani\u00ebl Reijsbergen", "label": "Dani\u00ebl Reijsbergen", "shape": "dot", "title": "Dani\u00ebl Reijsbergen"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Spyros Voulgaris", "label": "Spyros Voulgaris", "shape": "dot", "title": "Spyros Voulgaris"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Sajal K. Das", "label": "Sajal K. Das", "shape": "dot", "title": "Sajal K. Das"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Roberto Ripamonti", "label": "Roberto Ripamonti", "shape": "dot", "title": "Roberto Ripamonti"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Chih Wei Ling", "label": "Chih Wei Ling", "shape": "dot", "title": "Chih Wei Ling"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Liviu Iftode", "label": "Liviu Iftode", "shape": "dot", "title": "Liviu Iftode"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jussi Keppo", "label": "Jussi Keppo", "shape": "dot", "title": "Jussi Keppo"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Michael Militzer", "label": "Michael Militzer", "shape": "dot", "title": "Michael Militzer"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Wan-Hee Cho", "label": "Wan-Hee Cho", "shape": "dot", "title": "Wan-Hee Cho"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Kyumars Sheykh Esmaili", "label": "Kyumars Sheykh Esmaili", "shape": "dot", "title": "Kyumars Sheykh Esmaili"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Gokhan Sagirlar", "label": "Gokhan Sagirlar", "shape": "dot", "title": "Gokhan Sagirlar"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Quach Vinh Thanh", "label": "Quach Vinh Thanh", "shape": "dot", "title": "Quach Vinh Thanh"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Aung Maw", "label": "Aung Maw", "shape": "dot", "title": "Aung Maw"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Sarunas Girdzijauskas", "label": "Sarunas Girdzijauskas", "shape": "dot", "title": "Sarunas Girdzijauskas"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Pascal Felber", "label": "Pascal Felber", "shape": "dot", "title": "Pascal Felber"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Andreas Wombacher", "label": "Andreas Wombacher", "shape": "dot", "title": "Andreas Wombacher"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Bhawani Shanker Bhati", "label": "Bhawani Shanker Bhati", "shape": "dot", "title": "Bhawani Shanker Bhati"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Chenliang Li", "label": "Chenliang Li", "shape": "dot", "title": "Chenliang Li"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Chua Chiah Soon", "label": "Chua Chiah Soon", "shape": "dot", "title": "Chua Chiah Soon"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Iva Bojic", "label": "Iva Bojic", "shape": "dot", "title": "Iva Bojic"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Thomas Paul", "label": "Thomas Paul", "shape": "dot", "title": "Thomas Paul"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Radoslaw Nielek", "label": "Radoslaw Nielek", "shape": "dot", "title": "Radoslaw Nielek"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Shun Hanli Hanley", "label": "Shun Hanli Hanley", "shape": "dot", "title": "Shun Hanli Hanley"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Adamas Aqsa Fahreza", "label": "Adamas Aqsa Fahreza", "shape": "dot", "title": "Adamas Aqsa Fahreza"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Prasenjit Dey", "label": "Prasenjit Dey", "shape": "dot", "title": "Prasenjit Dey"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Kuiyu Chang", "label": "Kuiyu Chang", "shape": "dot", "title": "Kuiyu Chang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Martin Hasler", "label": "Martin Hasler", "shape": "dot", "title": "Martin Hasler"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Marios D. Dikaiakos", "label": "Marios D. Dikaiakos", "shape": "dot", "title": "Marios D. Dikaiakos"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Alberto Montresor", "label": "Alberto Montresor", "shape": "dot", "title": "Alberto Montresor"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Vigneshwaran Shankaran", "label": "Vigneshwaran Shankaran", "shape": "dot", "title": "Vigneshwaran Shankaran"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Tien Tuan Anh Dinh", "label": "Tien Tuan Anh Dinh", "shape": "dot", "title": "Tien Tuan Anh Dinh"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Shahin Salavati", "label": "Shahin Salavati", "shape": "dot", "title": "Shahin Salavati"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Bretislav Hajek", "label": "Bretislav Hajek", "shape": "dot", "title": "Bretislav Hajek"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Karl Aberer", "label": "Karl Aberer", "shape": "dot", "title": "Karl Aberer"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Dick H. J. Epema", "label": "Dick H. J. Epema", "shape": "dot", "title": "Dick H. J. Epema"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Anthony Ventresque", "label": "Anthony Ventresque", "shape": "dot", "title": "Anthony Ventresque"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Rongxing Lu", "label": "Rongxing Lu", "shape": "dot", "title": "Rongxing Lu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jordan Ivanchev", "label": "Jordan Ivanchev", "shape": "dot", "title": "Jordan Ivanchev"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Minh-Tam Le", "label": "Minh-Tam Le", "shape": "dot", "title": "Minh-Tam Le"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Zhijun Wang", "label": "Zhijun Wang", "shape": "dot", "title": "Zhijun Wang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Roman Schmidt", "label": "Roman Schmidt", "shape": "dot", "title": "Roman Schmidt"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Beng Chin Ooi", "label": "Beng Chin Ooi", "shape": "dot", "title": "Beng Chin Ooi"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Matteo Dell\u0027Amico", "label": "Matteo Dell\u0027Amico", "shape": "dot", "title": "Matteo Dell\u0027Amico"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Agus Trisnajaya Kwee", "label": "Agus Trisnajaya Kwee", "shape": "dot", "title": "Agus Trisnajaya Kwee"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jingchi Zhang", "label": "Jingchi Zhang", "shape": "dot", "title": "Jingchi Zhang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "J. Harshan", "label": "J. Harshan", "shape": "dot", "title": "J. Harshan"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Vasilios Darlagiannis", "label": "Vasilios Darlagiannis", "shape": "dot", "title": "Vasilios Darlagiannis"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jackson Tan Teck Yong", "label": "Jackson Tan Teck Yong", "shape": "dot", "title": "Jackson Tan Teck Yong"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Tomasz Kaszuba", "label": "Tomasz Kaszuba", "shape": "dot", "title": "Tomasz Kaszuba"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Anupama Aggarwal", "label": "Anupama Aggarwal", "shape": "dot", "title": "Anupama Aggarwal"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Gunnar Kreitz", "label": "Gunnar Kreitz", "shape": "dot", "title": "Gunnar Kreitz"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Federico Franzoni", "label": "Federico Franzoni", "shape": "dot", "title": "Federico Franzoni"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Shakshi Sharma", "label": "Shakshi Sharma", "shape": "dot", "title": "Shakshi Sharma"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Sonja Buchegger", "label": "Sonja Buchegger", "shape": "dot", "title": "Sonja Buchegger"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Shiven Mian", "label": "Shiven Mian", "shape": "dot", "title": "Shiven Mian"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ee-Peng Lim", "label": "Ee-Peng Lim", "shape": "dot", "title": "Ee-Peng Lim"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Baihua Zheng", "label": "Baihua Zheng", "shape": "dot", "title": "Baihua Zheng"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Alberto Trombetta", "label": "Alberto Trombetta", "shape": "dot", "title": "Alberto Trombetta"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Silvia Quarteroni", "label": "Silvia Quarteroni", "shape": "dot", "title": "Silvia Quarteroni"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Wojciech Galuba", "label": "Wojciech Galuba", "shape": "dot", "title": "Wojciech Galuba"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Piotr Skowron", "label": "Piotr Skowron", "shape": "dot", "title": "Piotr Skowron"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ye Tian", "label": "Ye Tian", "shape": "dot", "title": "Ye Tian"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ertem Esiner", "label": "Ertem Esiner", "shape": "dot", "title": "Ertem Esiner"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Lorenzo Bossi", "label": "Lorenzo Bossi", "shape": "dot", "title": "Lorenzo Bossi"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yi Zhang", "label": "Yi Zhang", "shape": "dot", "title": "Yi Zhang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Stefano Braghin", "label": "Stefano Braghin", "shape": "dot", "title": "Stefano Braghin"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Mohan Kumar", "label": "Mohan Kumar", "shape": "dot", "title": "Mohan Kumar"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Milind Ganjoo", "label": "Milind Ganjoo", "shape": "dot", "title": "Milind Ganjoo"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Krzysztof Rzadca", "label": "Krzysztof Rzadca", "shape": "dot", "title": "Krzysztof Rzadca"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Adam Wierzbicki", "label": "Adam Wierzbicki", "shape": "dot", "title": "Adam Wierzbicki"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Maureen", "label": "Maureen", "shape": "dot", "title": "Maureen"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Hank Korth", "label": "Hank Korth", "shape": "dot", "title": "Hank Korth"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Evaggelia Pitoura", "label": "Evaggelia Pitoura", "shape": "dot", "title": "Evaggelia Pitoura"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Doris Schi\u00f6berg", "label": "Doris Schi\u00f6berg", "shape": "dot", "title": "Doris Schi\u00f6berg"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Steven C. H. Hoi", "label": "Steven C. H. Hoi", "shape": "dot", "title": "Steven C. H. Hoi"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Seif Haridi", "label": "Seif Haridi", "shape": "dot", "title": "Seif Haridi"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Teruo Higashino", "label": "Teruo Higashino", "shape": "dot", "title": "Teruo Higashino"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Albert Hupa", "label": "Albert Hupa", "shape": "dot", "title": "Albert Hupa"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Christian von der Weth", "label": "Christian von der Weth", "shape": "dot", "title": "Christian von der Weth"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Niklas Lochschmidt", "label": "Niklas Lochschmidt", "shape": "dot", "title": "Niklas Lochschmidt"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Hock Hee Ang", "label": "Hock Hee Ang", "shape": "dot", "title": "Hock Hee Ang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Fabius Klemm", "label": "Fabius Klemm", "shape": "dot", "title": "Fabius Klemm"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jun Xu", "label": "Jun Xu", "shape": "dot", "title": "Jun Xu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Lluis Pamies-Juarez", "label": "Lluis Pamies-Juarez", "shape": "dot", "title": "Lluis Pamies-Juarez"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Nelman Lubis Ibrahim", "label": "Nelman Lubis Ibrahim", "shape": "dot", "title": "Nelman Lubis Ibrahim"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ion Stoica", "label": "Ion Stoica", "shape": "dot", "title": "Ion Stoica"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Wangfan Gu", "label": "Wangfan Gu", "shape": "dot", "title": "Wangfan Gu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Renault John", "label": "Renault John", "shape": "dot", "title": "Renault John"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Wolfgang Nejdl", "label": "Wolfgang Nejdl", "shape": "dot", "title": "Wolfgang Nejdl"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Emanuele Ragnoli", "label": "Emanuele Ragnoli", "shape": "dot", "title": "Emanuele Ragnoli"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Wenqiang Wang", "label": "Wenqiang Wang", "shape": "dot", "title": "Wenqiang Wang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Le-Hung Vu", "label": "Le-Hung Vu", "shape": "dot", "title": "Le-Hung Vu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Kam-Wing Ng", "label": "Kam-Wing Ng", "shape": "dot", "title": "Kam-Wing Ng"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Philippe Cudr\u00e9-Mauroux", "label": "Philippe Cudr\u00e9-Mauroux", "shape": "dot", "title": "Philippe Cudr\u00e9-Mauroux"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Di Wu", "label": "Di Wu", "shape": "dot", "title": "Di Wu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Thorsten Strufe", "label": "Thorsten Strufe", "shape": "dot", "title": "Thorsten Strufe"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Simone Bottoni", "label": "Simone Bottoni", "shape": "dot", "title": "Simone Bottoni"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Indira Sen", "label": "Indira Sen", "shape": "dot", "title": "Indira Sen"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Suman Majumder", "label": "Suman Majumder", "shape": "dot", "title": "Suman Majumder"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Piotr Turek", "label": "Piotr Turek", "shape": "dot", "title": "Piotr Turek"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Pedro Garc\u00eda L\u00f3pez", "label": "Pedro Garc\u00eda L\u00f3pez", "shape": "dot", "title": "Pedro Garc\u00eda L\u00f3pez"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Gilles Tr\u00e9dan", "label": "Gilles Tr\u00e9dan", "shape": "dot", "title": "Gilles Tr\u00e9dan"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Manfred Hauswirth", "label": "Manfred Hauswirth", "shape": "dot", "title": "Manfred Hauswirth"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yuxia Yao", "label": "Yuxia Yao", "shape": "dot", "title": "Yuxia Yao"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "David Eckhoff", "label": "David Eckhoff", "shape": "dot", "title": "David Eckhoff"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Adriana Iamnitchi", "label": "Adriana Iamnitchi", "shape": "dot", "title": "Adriana Iamnitchi"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Shou-De Lin", "label": "Shou-De Lin", "shape": "dot", "title": "Shou-De Lin"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ponnurangam Kumaraguru", "label": "Ponnurangam Kumaraguru", "shape": "dot", "title": "Ponnurangam Kumaraguru"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Silivanxay Phetsouvanh", "label": "Silivanxay Phetsouvanh", "shape": "dot", "title": "Silivanxay Phetsouvanh"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Lichun Li", "label": "Lichun Li", "shape": "dot", "title": "Lichun Li"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Etienne Rivi\u00e8re", "label": "Etienne Rivi\u00e8re", "shape": "dot", "title": "Etienne Rivi\u00e8re"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Paulina Adamska", "label": "Paulina Adamska", "shape": "dot", "title": "Paulina Adamska"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Sally Nanyang Ang", "label": "Sally Nanyang Ang", "shape": "dot", "title": "Sally Nanyang Ang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Alwen Tiu", "label": "Alwen Tiu", "shape": "dot", "title": "Alwen Tiu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Hock-Beng Lim", "label": "Hock-Beng Lim", "shape": "dot", "title": "Hock-Beng Lim"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Rajesh Sharma", "label": "Rajesh Sharma", "shape": "dot", "title": "Rajesh Sharma"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Hui Fang", "label": "Hui Fang", "shape": "dot", "title": "Hui Fang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Stuart W. Shulman", "label": "Stuart W. Shulman", "shape": "dot", "title": "Stuart W. Shulman"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Christian Rondanini", "label": "Christian Rondanini", "shape": "dot", "title": "Christian Rondanini"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Zoran Despotovic", "label": "Zoran Despotovic", "shape": "dot", "title": "Zoran Despotovic"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Magdalena Punceva", "label": "Magdalena Punceva", "shape": "dot", "title": "Magdalena Punceva"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jie Wu", "label": "Jie Wu", "shape": "dot", "title": "Jie Wu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Aatish Chiniah", "label": "Aatish Chiniah", "shape": "dot", "title": "Aatish Chiniah"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jianshu Weng", "label": "Jianshu Weng", "shape": "dot", "title": "Jianshu Weng"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Kim-Kwang Raymond Choo", "label": "Kim-Kwang Raymond Choo", "shape": "dot", "title": "Kim-Kwang Raymond Choo"}]);
+                  edges = new vis.DataSet([{"from": "Anwitaman Datta", "to": "Fr\u00e9d\u00e9rique E. Oggier"}, {"from": "Anwitaman Datta", "to": "Shakshi Sharma"}, {"from": "Anwitaman Datta", "to": "Vigneshwaran Shankaran"}, {"from": "Anwitaman Datta", "to": "Rajesh Sharma"}, {"from": "Anwitaman Datta", "to": "Dani\u00ebl Reijsbergen"}, {"from": "Anwitaman Datta", "to": "Aung Maw"}, {"from": "Anwitaman Datta", "to": "Jingchi Zhang"}, {"from": "Anwitaman Datta", "to": "Tien Tuan Anh Dinh"}, {"from": "Anwitaman Datta", "to": "Bretislav Hajek"}, {"from": "Anwitaman Datta", "to": "Jussi Keppo"}, {"from": "Anwitaman Datta", "to": "Hank Korth"}, {"from": "Anwitaman Datta", "to": "Chua Chiah Soon"}, {"from": "Anwitaman Datta", "to": "Wangfan Gu"}, {"from": "Anwitaman Datta", "to": "Suman Majumder"}, {"from": "Anwitaman Datta", "to": "Silivanxay Phetsouvanh"}, {"from": "Anwitaman Datta", "to": "Ekanshi Agrawal"}, {"from": "Anwitaman Datta", "to": "Simone Bottoni"}, {"from": "Anwitaman Datta", "to": "Federico Franzoni"}, {"from": "Anwitaman Datta", "to": "Emanuele Ragnoli"}, {"from": "Anwitaman Datta", "to": "Roberto Ripamonti"}, {"from": "Anwitaman Datta", "to": "Christian Rondanini"}, {"from": "Anwitaman Datta", "to": "Gokhan Sagirlar"}, {"from": "Anwitaman Datta", "to": "Alberto Trombetta"}, {"from": "Anwitaman Datta", "to": "Bhawani Shanker Bhati"}, {"from": "Anwitaman Datta", "to": "Jordan Ivanchev"}, {"from": "Anwitaman Datta", "to": "Iva Bojic"}, {"from": "Anwitaman Datta", "to": "David Eckhoff"}, {"from": "Anwitaman Datta", "to": "Adamas Aqsa Fahreza"}, {"from": "Anwitaman Datta", "to": "Alwen Tiu"}, {"from": "Anwitaman Datta", "to": "Ertem Esiner"}, {"from": "Anwitaman Datta", "to": "Chih Wei Ling"}, {"from": "Anwitaman Datta", "to": "Jun Xu"}, {"from": "Anwitaman Datta", "to": "Pedro Garc\u00eda L\u00f3pez"}, {"from": "Anwitaman Datta", "to": "Alberto Montresor"}, {"from": "Anwitaman Datta", "to": "Beng Chin Ooi"}, {"from": "Anwitaman Datta", "to": "Indira Sen"}, {"from": "Anwitaman Datta", "to": "Anupama Aggarwal"}, {"from": "Anwitaman Datta", "to": "Shiven Mian"}, {"from": "Anwitaman Datta", "to": "Siddharth Singh"}, {"from": "Anwitaman Datta", "to": "Ponnurangam Kumaraguru"}, {"from": "Anwitaman Datta", "to": "Xin Liu"}, {"from": "Anwitaman Datta", "to": "Karl Aberer"}, {"from": "Anwitaman Datta", "to": "Piotr Skowron"}, {"from": "Anwitaman Datta", "to": "Krzysztof Rzadca"}, {"from": "Anwitaman Datta", "to": "Lichun Li"}, {"from": "Anwitaman Datta", "to": "Michael Militzer"}, {"from": "Anwitaman Datta", "to": "Thomas Paul"}, {"from": "Anwitaman Datta", "to": "Niklas Lochschmidt"}, {"from": "Anwitaman Datta", "to": "Hani Salah"}, {"from": "Anwitaman Datta", "to": "Thorsten Strufe"}, {"from": "Anwitaman Datta", "to": "Lluis Pamies-Juarez"}, {"from": "Anwitaman Datta", "to": "J. Harshan"}, {"from": "Anwitaman Datta", "to": "Rongxing Lu"}, {"from": "Anwitaman Datta", "to": "Kim-Kwang Raymond Choo"}, {"from": "Anwitaman Datta", "to": "Jun Shao"}, {"from": "Anwitaman Datta", "to": "Shun Hanli Hanley"}, {"from": "Anwitaman Datta", "to": "Wan-Hee Cho"}, {"from": "Anwitaman Datta", "to": "Dick H. J. Epema"}, {"from": "Anwitaman Datta", "to": "Teruo Higashino"}, {"from": "Anwitaman Datta", "to": "Adriana Iamnitchi"}, {"from": "Anwitaman Datta", "to": "Marinho P. Barcellos"}, {"from": "Anwitaman Datta", "to": "Pascal Felber"}, {"from": "Anwitaman Datta", "to": "Etienne Rivi\u00e8re"}, {"from": "Anwitaman Datta", "to": "Gunnar Kreitz"}, {"from": "Anwitaman Datta", "to": "Sonja Buchegger"}, {"from": "Anwitaman Datta", "to": "Quach Vinh Thanh"}, {"from": "Anwitaman Datta", "to": "Gilles Tr\u00e9dan"}, {"from": "Anwitaman Datta", "to": "Jackson Tan Teck Yong"}, {"from": "Anwitaman Datta", "to": "Stefano Braghin"}, {"from": "Anwitaman Datta", "to": "Milind Ganjoo"}, {"from": "Anwitaman Datta", "to": "Kyumars Sheykh Esmaili"}, {"from": "Anwitaman Datta", "to": "Shahin Salavati"}, {"from": "Anwitaman Datta", "to": "Adam Wierzbicki"}, {"from": "Anwitaman Datta", "to": "Tomasz Kaszuba"}, {"from": "Anwitaman Datta", "to": "Radoslaw Nielek"}, {"from": "Anwitaman Datta", "to": "Paulina Adamska"}, {"from": "Anwitaman Datta", "to": "Chenliang Li"}, {"from": "Anwitaman Datta", "to": "Ee-Peng Lim"}, {"from": "Anwitaman Datta", "to": "Stuart W. Shulman"}, {"from": "Anwitaman Datta", "to": "Aatish Chiniah"}, {"from": "Anwitaman Datta", "to": "Lorenzo Bossi"}, {"from": "Anwitaman Datta", "to": "Wenqiang Wang"}, {"from": "Anwitaman Datta", "to": "Christian von der Weth"}, {"from": "Anwitaman Datta", "to": "Marios D. Dikaiakos"}, {"from": "Anwitaman Datta", "to": "Seif Haridi"}, {"from": "Anwitaman Datta", "to": "Liviu Iftode"}, {"from": "Anwitaman Datta", "to": "Evaggelia Pitoura"}, {"from": "Anwitaman Datta", "to": "Spyros Voulgaris"}, {"from": "Anwitaman Datta", "to": "Anthony Ventresque"}, {"from": "Anwitaman Datta", "to": "Hock-Beng Lim"}, {"from": "Anwitaman Datta", "to": "Jianshu Weng"}, {"from": "Anwitaman Datta", "to": "Qi He"}, {"from": "Anwitaman Datta", "to": "Yuxia Yao"}, {"from": "Anwitaman Datta", "to": "Hui Fang"}, {"from": "Anwitaman Datta", "to": "Sarunas Girdzijauskas"}, {"from": "Anwitaman Datta", "to": "Wojciech Galuba"}, {"from": "Anwitaman Datta", "to": "Vasilios Darlagiannis"}, {"from": "Anwitaman Datta", "to": "Matteo Dell\u0027Amico"}, {"from": "Anwitaman Datta", "to": "Pietro Michiardi"}, {"from": "Anwitaman Datta", "to": "Kuiyu Chang"}, {"from": "Anwitaman Datta", "to": "Baihua Zheng"}, {"from": "Anwitaman Datta", "to": "Shou-De Lin"}, {"from": "Anwitaman Datta", "to": "Agus Trisnajaya Kwee"}, {"from": "Anwitaman Datta", "to": "Nelman Lubis Ibrahim"}, {"from": "Anwitaman Datta", "to": "Maureen"}, {"from": "Anwitaman Datta", "to": "Sally Nanyang Ang"}, {"from": "Anwitaman Datta", "to": "Sally Ang"}, {"from": "Anwitaman Datta", "to": "Yi Zhang"}, {"from": "Anwitaman Datta", "to": "Hock Hee Ang"}, {"from": "Anwitaman Datta", "to": "Vivekanand Gopalkrishnan"}, {"from": "Anwitaman Datta", "to": "Steven C. H. Hoi"}, {"from": "Anwitaman Datta", "to": "Piotr Turek"}, {"from": "Anwitaman Datta", "to": "Albert Hupa"}, {"from": "Anwitaman Datta", "to": "Le-Hung Vu"}, {"from": "Anwitaman Datta", "to": "Zhijun Wang"}, {"from": "Anwitaman Datta", "to": "Sajal K. Das"}, {"from": "Anwitaman Datta", "to": "Mohan Kumar"}, {"from": "Anwitaman Datta", "to": "Doris Schi\u00f6berg"}, {"from": "Anwitaman Datta", "to": "Henning Schulzrinne"}, {"from": "Anwitaman Datta", "to": "Di Wu"}, {"from": "Anwitaman Datta", "to": "Ye Tian"}, {"from": "Anwitaman Datta", "to": "Kam-Wing Ng"}, {"from": "Anwitaman Datta", "to": "Minh-Tam Le"}, {"from": "Anwitaman Datta", "to": "Hoang-Vu Dang"}, {"from": "Anwitaman Datta", "to": "Roman Schmidt"}, {"from": "Anwitaman Datta", "to": "Ion Stoica"}, {"from": "Anwitaman Datta", "to": "Michael J. Franklin"}, {"from": "Anwitaman Datta", "to": "Wolfgang Nejdl"}, {"from": "Anwitaman Datta", "to": "Manfred Hauswirth"}, {"from": "Anwitaman Datta", "to": "Martin Hasler"}, {"from": "Anwitaman Datta", "to": "Renault John"}, {"from": "Anwitaman Datta", "to": "Fabius Klemm"}, {"from": "Anwitaman Datta", "to": "Silvia Quarteroni"}, {"from": "Anwitaman Datta", "to": "Zoran Despotovic"}, {"from": "Anwitaman Datta", "to": "Andreas Wombacher"}, {"from": "Anwitaman Datta", "to": "Philippe Cudr\u00e9-Mauroux"}, {"from": "Anwitaman Datta", "to": "Magdalena Punceva"}, {"from": "Anwitaman Datta", "to": "Jie Wu"}, {"from": "Anwitaman Datta", "to": "Prasenjit Dey"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

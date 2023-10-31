@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 1000px;
+                 background-color: #242424;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "orange", "font": {"color": "white"}, "id": "Chan Syin", "label": "Chan Syin", "shape": "dot", "title": "Chan Syin"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Zhenghua Chen", "label": "Zhenghua Chen", "shape": "dot", "title": "Zhenghua Chen"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ee-Luang Ang", "label": "Ee-Luang Ang", "shape": "dot", "title": "Ee-Luang Ang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yong Liu", "label": "Yong Liu", "shape": "dot", "title": "Yong Liu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yung-Kwang Lai", "label": "Yung-Kwang Lai", "shape": "dot", "title": "Yung-Kwang Lai"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Stephen Yew Wei Chan", "label": "Stephen Yew Wei Chan", "shape": "dot", "title": "Stephen Yew Wei Chan"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Nhu Khue Vuong", "label": "Nhu Khue Vuong", "shape": "dot", "title": "Nhu Khue Vuong"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Maode Ma", "label": "Maode Ma", "shape": "dot", "title": "Maode Ma"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "K. M. Lau", "label": "K. M. Lau", "shape": "dot", "title": "K. M. Lau"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "William D. Kearns", "label": "William D. Kearns", "shape": "dot", "title": "William D. Kearns"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Song Liu", "label": "Song Liu", "shape": "dot", "title": "Song Liu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Philip Lin Kiat Yap", "label": "Philip Lin Kiat Yap", "shape": "dot", "title": "Philip Lin Kiat Yap"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Chong-Wah Ngo", "label": "Chong-Wah Ngo", "shape": "dot", "title": "Chong-Wah Ngo"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ashish Kumar", "label": "Ashish Kumar", "shape": "dot", "title": "Ashish Kumar"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jimson Mathew", "label": "Jimson Mathew", "shape": "dot", "title": "Jimson Mathew"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Aung Aung Phyo Wai", "label": "Aung Aung Phyo Wai", "shape": "dot", "title": "Aung Aung Phyo Wai"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Pham Duy Duc", "label": "Pham Duy Duc", "shape": "dot", "title": "Pham Duy Duc"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Haihong Zhang", "label": "Haihong Zhang", "shape": "dot", "title": "Haihong Zhang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Kok F. Lai", "label": "Kok F. Lai", "shape": "dot", "title": "Kok F. Lai"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ziming Zhang", "label": "Ziming Zhang", "shape": "dot", "title": "Ziming Zhang"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Xiaoli Li", "label": "Xiaoli Li", "shape": "dot", "title": "Xiaoli Li"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Vishram Mishra", "label": "Vishram Mishra", "shape": "dot", "title": "Vishram Mishra"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Christopher S. G. Khoo", "label": "Christopher S. G. Khoo", "shape": "dot", "title": "Christopher S. G. Khoo"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Norraihan Bte Hamzah", "label": "Norraihan Bte Hamzah", "shape": "dot", "title": "Norraihan Bte Hamzah"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yiqun Hu", "label": "Yiqun Hu", "shape": "dot", "title": "Yiqun Hu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jin-Cheon Na", "label": "Jin-Cheon Na", "shape": "dot", "title": "Jin-Cheon Na"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Min Wu", "label": "Min Wu", "shape": "dot", "title": "Min Wu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yun Niu", "label": "Yun Niu", "shape": "dot", "title": "Yun Niu"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Hong Zhou", "label": "Hong Zhou", "shape": "dot", "title": "Hong Zhou"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Haoran Yi", "label": "Haoran Yi", "shape": "dot", "title": "Haoran Yi"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "S. H. Annabel Chen", "label": "S. H. Annabel Chen", "shape": "dot", "title": "S. H. Annabel Chen"}]);
+                  edges = new vis.DataSet([{"from": "Chan Syin", "to": "Nhu Khue Vuong"}, {"from": "Chan Syin", "to": "Yong Liu"}, {"from": "Chan Syin", "to": "Zhenghua Chen"}, {"from": "Chan Syin", "to": "Min Wu"}, {"from": "Chan Syin", "to": "Xiaoli Li"}, {"from": "Chan Syin", "to": "Ashish Kumar"}, {"from": "Chan Syin", "to": "Maode Ma"}, {"from": "Chan Syin", "to": "William D. Kearns"}, {"from": "Chan Syin", "to": "Vishram Mishra"}, {"from": "Chan Syin", "to": "Stephen Yew Wei Chan"}, {"from": "Chan Syin", "to": "Philip Lin Kiat Yap"}, {"from": "Chan Syin", "to": "S. H. Annabel Chen"}, {"from": "Chan Syin", "to": "Jimson Mathew"}, {"from": "Chan Syin", "to": "Aung Aung Phyo Wai"}, {"from": "Chan Syin", "to": "Pham Duy Duc"}, {"from": "Chan Syin", "to": "Haihong Zhang"}, {"from": "Chan Syin", "to": "K. M. Lau"}, {"from": "Chan Syin", "to": "Ziming Zhang"}, {"from": "Chan Syin", "to": "Yiqun Hu"}, {"from": "Chan Syin", "to": "Yung-Kwang Lai"}, {"from": "Chan Syin", "to": "Song Liu"}, {"from": "Chan Syin", "to": "Jin-Cheon Na"}, {"from": "Chan Syin", "to": "Christopher S. G. Khoo"}, {"from": "Chan Syin", "to": "Norraihan Bte Hamzah"}, {"from": "Chan Syin", "to": "Haoran Yi"}, {"from": "Chan Syin", "to": "Yun Niu"}, {"from": "Chan Syin", "to": "Chong-Wah Ngo"}, {"from": "Chan Syin", "to": "Kok F. Lai"}, {"from": "Chan Syin", "to": "Ee-Luang Ang"}, {"from": "Chan Syin", "to": "Hong Zhou"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
