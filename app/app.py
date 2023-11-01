@@ -9,6 +9,7 @@ import pickle
 import networkx as nx
 import plotly.express as px
 import plotly.graph_objects as go
+import webbrowser
 import itertools
 import re
 import streamlit.components.v1 as components
@@ -82,6 +83,24 @@ def get_rank(venue):
 def display_home(prof, background):
     # Display profile
     st.image('ntulogo.png', width=650)
+    button_column = st.columns(3)
+    if 'DR-NTU URL' in df.columns:
+            dr_ntu_url = df.loc[df['Full Name'] == prof, 'DR-NTU URL'].values[0]
+            if dr_ntu_url:
+                if button_column[0].button(f"DR-NTU Link"):
+                    webbrowser.open_new_tab(dr_ntu_url)
+    
+    if 'Google Scholar URL' in df.columns:
+        google_scholar_url = df.loc[df['Full Name'] == prof, 'Google Scholar URL'].values[0]
+        if google_scholar_url:
+            if button_column[1].button(f"Google Scholar Link"):
+                webbrowser.open_new_tab(google_scholar_url)
+    
+    if 'Website URL' in df.columns:
+        website_url = df.loc[df['Full Name'] == prof, 'Website URL'].values[0]
+        if website_url:
+            if button_column[2].button(f"Personal Website Link"):
+                webbrowser.open_new_tab(website_url)
     profile_container = st.container()
     profile_container.title(prof)
     profile_container.subheader('Biography')
@@ -105,10 +124,6 @@ def display_home(prof, background):
         st.write(research)
         st.subheader("Citations (Cited By)")
         st.write(no_citations)
-    profile_container.subheader(f"Links to {prof} profile")
-    profile_container.write(f"DR-NTU Link: {df.loc[df['Full Name'] == prof, 'DR-NTU URL'].values[0]}")
-    profile_container.write(f"Google Scholar Link: {df.loc[df['Full Name'] == prof, 'Google Scholar URL'].values[0]}")
-    profile_container.write(f"Personal Website Link: {df.loc[df['Full Name'] == prof, 'Website URL'].values[0]}")
     
 
 def display_publication_details(publication):
