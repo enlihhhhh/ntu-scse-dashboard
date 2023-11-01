@@ -260,7 +260,7 @@ def pubs_count_subtopic(publications):
 # Count the Number of Ranks for publications
 def pubs_count_rank(publications):
     rank_counts = {}
-    ranking_order = ['A*', 'A', 'B', 'C', 'D', 'E', 'Unknown']
+    ranking_order = ['A*', 'A', 'B', 'C', 'D', 'E']
     
     for publication in publications:
         rank = publication['venue_rank']
