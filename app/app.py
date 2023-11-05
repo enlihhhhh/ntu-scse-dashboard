@@ -83,23 +83,22 @@ def get_rank(venue):
 def display_home(prof, background):
     # Display profile
     st.image('ntulogo.png', width=650)
-    button_column = st.columns(3)
     if 'DR-NTU URL' in df.columns:
             dr_ntu_url = df.loc[df['Full Name'] == prof, 'DR-NTU URL'].values[0]
             if dr_ntu_url:
-                if button_column[0].button(f"DR-NTU Link"):
+                if st.button(f"DR-NTU Link"):
                     webbrowser.open_new_tab(dr_ntu_url)
     
     if 'Google Scholar URL' in df.columns:
         google_scholar_url = df.loc[df['Full Name'] == prof, 'Google Scholar URL'].values[0]
         if google_scholar_url:
-            if button_column[1].button(f"Google Scholar Link"):
+            if st.button(f"Google Scholar Link"):
                 webbrowser.open_new_tab(google_scholar_url)
     
     if 'Website URL' in df.columns:
         website_url = df.loc[df['Full Name'] == prof, 'Website URL'].values[0]
         if website_url:
-            if button_column[2].button(f"Personal Website Link"):
+            if st.button(f"Personal Website Link"):
                 webbrowser.open_new_tab(website_url)
     profile_container = st.container()
     profile_container.title(prof)
@@ -127,26 +126,10 @@ def display_home(prof, background):
     
 
 def display_publication_details(publication):
-    st.subheader(publication['title'])
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Authors")
-        st.write(', '.join(publication['authors']))
-        st.subheader("Venue")
-        st.markdown(f"[{publication['venue']}]({publication['venue_url']})")
-        st.markdown(f"Rank: {publication['venue_rank']}")
-        st.subheader("Type")
-        st.write(publication['type'])
-    with col2:
-        st.subheader("Subcategory")
-        st.write(publication['subcategory'])
-        st.subheader("Publication Year")
-        st.write(publication['year'])
-        st.subheader("Cited By")
-        if publication['citations'] is not None:
-            st.write(publication['citations'])
-        else:
-            st.write("No citations available")
+    # Create a DataFrame from the list of dictionaries
+    df = pd.DataFrame(publication)
+    
+    st.dataframe(df, width=1000)
 
 def display_publications(prof):
     # Display profile
@@ -157,9 +140,7 @@ def display_publications(prof):
     selection = st.sidebar.selectbox("Select an option:", ["View All", "View by Topic", "View by Year"])
     #st.selectbox('Choose your publication to display', publications)
     if selection == "View All":
-        for pub in publications:
-            display_publication_details(pub)
-            st.markdown("\n")
+        display_publication_details(publications)
     elif selection == "View by Topic":
         topics = list(set([publication["subcategory"] for publication in publications]))
         selected_topic = st.sidebar.multiselect("Select a topic to filter:", topics)
@@ -494,9 +475,6 @@ def display_network(prof):
             for i in names_list:
                 st.write(i)
 
-
-
-
 # This function is to create the graph for selected professor, if show all network exclude the color code part 
 def create_scse_graph(selected_prof):
     global scse_authors
@@ -579,13 +557,12 @@ st.sidebar.header('NTU SCSE Faculty Member Dashboard')
 st.sidebar.subheader('Choose your Professor')
 prof = st.sidebar.selectbox('Research Profile:', sorted_df['Full Name'])
 prof_index, background, research_interest,  no_citations = prof_profile(prof)
-st.sidebar.subheader("Navigation")
-selection = st.sidebar.radio("Go To", ["Profile Home", "Display Publications", "Publications Visualisations", "Analysis of Professor", 
-                                            "Collaboration Network", "Professor's Information"])
+st.sidebar.subheader("Individual Faculty Navigation")
+selection = st.sidebar.radio("Go To", ["Profile Home", "Publications Visualisations", "Analysis of Professor", 
+                                            "Collaboration Network"])
 # Side Bar Selectionsto display different pages
 if selection == "Profile Home":
     display_home(prof,background)
-elif selection == "Display Publications":
     display_publications(prof)
 elif selection == "Publications Visualisations":
     display_publications_visualisations(prof)
@@ -593,6 +570,3 @@ elif selection == "Analysis of Professor":
     display_analysis(prof)
 elif selection == "Collaboration Network":
     display_network(prof)
-elif selection == "Professor's Information":
-    st.title("Information of " + str(prof))
-    st.dataframe(df[df['Full Name'] == prof])
