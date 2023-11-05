@@ -15,6 +15,7 @@ import re
 import streamlit.components.v1 as components
 from pyvis.network import Network
 from bs4 import BeautifulSoup
+from wordcloud import WordCloud
 
 # Setting Random Seed
 random.seed(42)
@@ -128,7 +129,7 @@ def display_home(prof, background):
 def display_publication_details(publication):
     # Create a DataFrame from the list of dictionaries
     df = pd.DataFrame(publication)
-    
+    # Join authors into a single string
     st.dataframe(df, width=1000)
 
 def display_publications(prof):
@@ -137,23 +138,22 @@ def display_publications(prof):
     profile_container.title('Publications')
     publications = load_pickle(f'publication_set/publications_{prof}.pkl')
     # Create a select box to choose between "View All" and "View by Topic"
-    selection = st.sidebar.selectbox("Select an option:", ["View All", "View by Topic", "View by Year"])
+    selection = st.selectbox("Select an option:", ["View All", "View by Topic", "View by Year"])
     #st.selectbox('Choose your publication to display', publications)
     if selection == "View All":
         display_publication_details(publications)
     elif selection == "View by Topic":
-        topics = list(set([publication["subcategory"] for publication in publications]))
-        selected_topic = st.sidebar.multiselect("Select a topic to filter:", topics)
-        for publication in publications:
-            if publication["subcategory"] in selected_topic:
-                # Include the code for displaying publication details here
-                display_publication_details(publication)
+            topics = list(set([publication["subcategory"] for publication in publications]))
+            selected_topic = st.multiselect("Select a topic to filter:", topics)
+            
+            selected_publications = [publication for publication in publications if publication["subcategory"] in selected_topic]
+            display_publication_details(selected_publications)
     elif selection == "View by Year":
         years = sorted(set([publication["year"] for publication in publications]), reverse=True)
-        selected_year = st.sidebar.multiselect("Select year to filter:", years)
-        for publication in publications:
-            if publication["year"] in selected_year:
-                display_publication_details(publication)
+        selected_year = st.multiselect("Select year to filter:", years)
+        
+        selected_publications = [publication for publication in publications if publication["year"] in selected_year]
+        display_publication_details(selected_publications)
 # Show Citations Throughout the Year
 def citations_plot(citations_year):
     labels = list(citations_year.keys())
@@ -253,6 +253,26 @@ def pubs_count_rank(publications):
                 rank_counts[rank] = 1
     
     return rank_counts
+# Count total SCSE Pubs
+def count_total_SCSE_pubs():
+    yearly_counts = {}
+    
+    for _, row in df.iterrows():
+        name = row['Full Name']
+        publications = load_pickle(f'publication_set/publications_{name}.pkl')
+        for publication in publications:
+            year = publication["year"]
+            if year in yearly_counts:
+                yearly_counts[year] += 1
+            else:
+                yearly_counts[year] = 1
+                
+    # Sort the dictionary by year in ascending order.
+    sorted_yearly_counts = {k: v for k, v in sorted(yearly_counts.items(), reverse = True)}
+
+    return sorted_yearly_counts
+
+
 # Count each combinations of year and subcategory for each publication
 def pubs_count_interests(publications):
     interest_counts = {}
@@ -269,9 +289,8 @@ def pubs_count_interests(publications):
             interest_counts[key] = 1
     return interest_counts
     
-# Menu for Publications Visualisations
+# Menu for Publications Visualisations (Individual)
 def display_publications_visualisations(prof):
-    st.title("Publications Visualisations")
     publications = load_pickle(f'publication_set/publications_{prof}.pkl')
     citations_data = load_pickle(f'citations_yearly_set/citations_{prof}.pkl')
     # Create a select box to choose 
@@ -283,8 +302,8 @@ def display_publications_visualisations(prof):
         labels = list(citations_data.keys())
         values = list(citations_data.values())
         # Sliders to adjust chart parameters
-        bargap = st.slider('Bar Gap', min_value=0.0, max_value=0.5, value=0.1, step=0.05)
-        height = st.slider('Chart Height', min_value=100, max_value=800, value=400, step=50)
+        bargap = st.slider('Bar Gap',min_value=0.0, max_value=0.5, value=0.1, step=0.05)
+        height = st.slider('Chart Height',min_value=100, max_value=800, value=400, step=50)
         # Create a bar chart using Plotly Express
         fig = px.bar(x=labels, y=values, title='Publication Count Over the Years', labels={'x': 'Year', 'y': 'Publications Count'})
         # Customize the layout of the chart
@@ -348,6 +367,67 @@ def display_publications_visualisations(prof):
         st.plotly_chart(fig)
         st.write(f"The following graph displays the quality of venues for the publications by {prof} over the years")
 
+def display_publications_visualisations_scse(prof, bargap, height, selection):
+    publications = load_pickle(f'publication_set/publications_{prof}.pkl')
+    citations_data = load_pickle(f'citations_yearly_set/citations_{prof}.pkl')
+    if selection == "View Citations Count Plot":
+        # Extract the years and counts from the dictionary
+        labels = list(citations_data.keys())
+        values = list(citations_data.values())
+        # Create a bar chart using Plotly Express
+        fig = px.bar(x=labels, y=values, title='Publication Count Over the Years', labels={'x': 'Year', 'y': 'Publications Count'})
+        # Customize the layout of the chart
+        fig.update_layout(
+            bargap=bargap,  # Adjust the gap between bars
+            height = height
+        )
+        # Display the chart in Streamlit
+        st.plotly_chart(fig)
+        st.write(f"The following graph displays the number of citations of all the publications by {prof} over the years")
+    elif selection == "View Publication Count Plot":
+        pub_dict = pubs_count_year(publications)
+        # Extract the years and counts from the dictionary
+        labels = list(pub_dict.keys())
+        values = list(pub_dict.values())
+        # Create a bar chart using Plotly Express
+        fig = px.bar(x=labels, y=values, title='Publication Count Over the Years', labels={'x': 'Year', 'y': 'Publications Count'})
+        # Customize the layout of the chart
+        fig.update_layout(
+            bargap=bargap,  # Adjust the gap between bars
+            height = height
+        )
+        # Display the chart in Streamlit
+        st.plotly_chart(fig)
+        st.write(f"The following graph displays the number of publications by {prof} over the years")
+    elif selection == "View Type of Publications Count Plot":
+        pub_dict = pubs_count_type(publications)
+        labels = list(pub_dict.keys())
+        values = list(pub_dict.values())
+        # Create a bar chart using Plotly Express
+        fig = px.bar(x=labels, y=values, title='Number of Publications per Type', labels={'x': 'Type of Publication', 'y': 'Publications Count'})
+        # Customize the layout of the chart
+        fig.update_layout(
+            bargap=bargap,  # Adjust the gap between bars
+            height = height
+        )
+        # Display the chart in Streamlit
+        st.plotly_chart(fig)
+        st.write(f"The following graph displays the number of publications for each type by {prof} over the years")
+    elif selection == "View Quality of Venues Plot":
+        pub_dict = pubs_count_rank(publications)
+        labels = list(pub_dict.keys())
+        values = list(pub_dict.values())
+        # Create a bar chart using Plotly Express
+        fig = px.bar(x=labels, y=values, title='Quality of Venues (Publications)', labels={'x': 'Ranking', 'y': 'Publications Count'})
+        # Customize the layout of the chart
+        fig.update_layout(
+            bargap=bargap,  # Adjust the gap between bars
+            height = height
+        )
+        # Display the chart in Streamlit
+        st.plotly_chart(fig)
+        st.write(f"The following graph displays the quality of venues for the publications by {prof} over the years")
+
 # Function to match Full Name to DBLP Names
 def match_fullname_to_dblp(df, full_name):
     match = df[df['Full Name'] == full_name]
@@ -362,43 +442,40 @@ def display_analysis(prof):
     st.title("Analysis of " + str(prof))
     publications = load_pickle(f"publication_set/publications_{prof}.pkl")
     interest_counts = pubs_count_interests(publications)
-    selection = st.sidebar.selectbox("Select an option:", ["View Stacked Bar Chart", "View Heatmap"])
-    if selection == "View Stacked Bar Chart":
-        st.write(f"The following chart shows the Stacked Bar Chart of publications categorised by Subcategories and Year, this helps us visualise the shift in interest for {prof} over the years in research.")
-        # Display the chart in Streamlit
-        st.plotly_chart(bar_shift_interest(interest_counts))
-    elif selection == "View Heatmap":
-        st.write(f"The following chart shows the Heatmap of publications categorised by Subcategories and Year, this helps us visualise the shift in interest for {prof} over the years in research.")
-        data = interest_counts
-        # Extract years and categories from the data
-        years = list(set(year for year, _ in data.keys()))
-        categories = list(set(category for _, category in data.keys()))
+    st.write(f"The following chart shows the Stacked Bar Chart of publications categorised by Subcategories and Year, this helps us visualise the shift in interest for {prof} over the years in research.")
+    # Display the chart in Streamlit
+    st.plotly_chart(bar_shift_interest(interest_counts))
+    st.write(f"The following chart shows the Heatmap of publications categorised by Subcategories and Year, this helps us visualise the shift in interest for {prof} over the years in research.")
+    data = interest_counts
+    # Extract years and categories from the data
+    years = list(set(year for year, _ in data.keys()))
+    categories = list(set(category for _, category in data.keys()))
 
-        # Prepare the data for the heatmap
-        heatmap_data = {
-            'Year': [year for year, _ in data.keys()],
-            'Category': [category for _, category in data.keys()],
-            'Count': [data.get((year, category), 0) for year, category in data.keys()]
-        }
+    # Prepare the data for the heatmap
+    heatmap_data = {
+        'Year': [year for year, _ in data.keys()],
+        'Category': [category for _, category in data.keys()],
+        'Count': [data.get((year, category), 0) for year, category in data.keys()]
+    }
 
-        # Create a DataFrame from the data
-        df = pd.DataFrame(heatmap_data)
+    # Create a DataFrame from the data
+    df = pd.DataFrame(heatmap_data)
 
-        # Create a heatmap using Plotly Express
-        fig = go.Figure(data=go.Heatmap(
-            y=df['Category'],
-            x=df['Year'],
-            z=df['Count'],
-            colorscale='Viridis',  # You can change the colorscale as needed
-            colorbar_title='Count',
-            hoverongaps=False,
-        ))
+    # Create a heatmap using Plotly Express
+    fig = go.Figure(data=go.Heatmap(
+        y=df['Category'],
+        x=df['Year'],
+        z=df['Count'],
+        colorscale='Viridis',  # You can change the colorscale as needed
+        colorbar_title='Count',
+        hoverongaps=False,
+    ))
 
-        # Customize the layout of the chart
-        fig.update_yaxes(title_text='Category')
-        fig.update_xaxes(title_text='Year')
-        # Display the heatmap in Streamlit
-        st.plotly_chart(fig)
+    # Customize the layout of the chart
+    fig.update_yaxes(title_text='Category')
+    fig.update_xaxes(title_text='Year')
+    # Display the heatmap in Streamlit
+    st.plotly_chart(fig)
 
 # Function to find researchers with common research interests with a given researcher
 def find_common_interests(selected_prof, specified_interest):
@@ -428,6 +505,15 @@ def find_common_interests(selected_prof, specified_interest):
                     common_interests.append(compare_name)
     return common_interests
 
+def sum_interests():
+    global df
+    temp = {}
+    for _, row in df.iterrows():
+        name = row['Full Name']
+        interests = load_pickle(f"research_interest_set/interest_{name}.pkl")
+        temp[name] = interests
+    return temp
+
 # Displaying Collaboration network
 def display_network(prof):
     st.title("Network of " + str(prof))
@@ -436,7 +522,7 @@ def display_network(prof):
                                                            "Group By Research Interest"])
     if selection == "View SCSE Network":
         st.subheader("SCSE Collaborations")
-        G = create_scse_graph(dblp_name)
+        G = create_scse_graph(dblp_name, True)
         G.save_graph('scse_network_st.html')
         HtmlFile = open('scse_network_st.html', 'r', encoding='utf-8')
         components.html(HtmlFile.read(), height=800, width = 1000)
@@ -476,12 +562,12 @@ def display_network(prof):
                 st.write(i)
 
 # This function is to create the graph for selected professor, if show all network exclude the color code part 
-def create_scse_graph(selected_prof):
+def create_scse_graph(selected_prof, color_code):
     global scse_authors
      # Define the set to store connected nodes
     connect_nodes = set()
     # Creating Pyvis Network
-    G = Network(height='1000px', bgcolor='#222222', font_color='white')
+    G = Network(height='1000px', bgcolor='#FFFFFF', font_color='black')
      # Iterate through the authors and add them as nodes in the Pyvis graph (excluding "NaN")
     for prof_name in scse_authors:
         if not pd.isna(prof_name) and prof_name != 'NaN':
@@ -502,21 +588,22 @@ def create_scse_graph(selected_prof):
                 # This will add regular edges and exclude self-loops
                 if author in scse_authors and author != dblp_name:
                     G.add_edge(dblp_name, author)  
-                    
-    # Functions to Colour Code nodes based on selected Professors
-    connect_nodes = set()
+    if color_code:         
+        # Functions to Colour Code nodes based on selected Professors
+        connect_nodes = set()
+        for edge in G.edges:
+            if edge['from'] == selected_prof:
+                connect_nodes.add(edge['to'])
+            elif edge['to'] == selected_prof:
+                connect_nodes.add(edge['from'])
 
-    for edge in G.edges:
-        if edge['from'] == selected_prof:
-            connect_nodes.add(edge['to'])
-        elif edge['to'] == selected_prof:
-            connect_nodes.add(edge['from'])
-
-    for node in G.nodes:
-        if node['label'] == selected_prof:
-            node['color'] = '#FB0303'
-        elif node['label'] in connect_nodes:
-            node['color'] = '#FB8E03'
+        for node in G.nodes:
+            if node['label'] == selected_prof:
+                node['color'] = '#FB0303'
+            elif node['label'] in connect_nodes:
+                node['color'] = '#FB8E03'
+    else: 
+        return G
     # Return the graph after creating and coloring nodes        
     return G
 # Creating Network Graph Outside NTU
@@ -551,22 +638,106 @@ def create_outsideNTU_graph(selected_prof):
 df = pd.read_csv('Lye_En_Lih_updated.csv')
 sorted_df = df.sort_values('Full Name')
 scse_authors = load_pickle('scse_network_authors.pkl')
+scse_interests = sum_interests()
 #st.markdown("<h1 style='text-align: left;'>NTU SCSE Faculty Member</h1>", unsafe_allow_html=True)
 st.sidebar.image("ntu_sidelogo.png", width=350)
 st.sidebar.header('NTU SCSE Faculty Member Dashboard')
-st.sidebar.subheader('Choose your Professor')
-prof = st.sidebar.selectbox('Research Profile:', sorted_df['Full Name'])
-prof_index, background, research_interest,  no_citations = prof_profile(prof)
-st.sidebar.subheader("Individual Faculty Navigation")
-selection = st.sidebar.radio("Go To", ["Profile Home", "Publications Visualisations", "Analysis of Professor", 
-                                            "Collaboration Network"])
-# Side Bar Selectionsto display different pages
-if selection == "Profile Home":
-    display_home(prof,background)
-    display_publications(prof)
-elif selection == "Publications Visualisations":
-    display_publications_visualisations(prof)
-elif selection == "Analysis of Professor":
-    display_analysis(prof)
-elif selection == "Collaboration Network":
-    display_network(prof)
+menu_selection = st.sidebar.selectbox("Select an Option:",["Individual Faculty Profile", "SCSE Profile"])
+if menu_selection == "Individual Faculty Profile":
+    st.sidebar.subheader('Choose your Professor')
+    prof = st.sidebar.selectbox('Research Profile:', sorted_df['Full Name'])
+    prof_index, background, research_interest,  no_citations = prof_profile(prof)
+    st.sidebar.subheader("Individual Faculty Navigation")
+    selection = st.sidebar.radio("Go To", ["Profile Home", "Publications Visualisations", "Analysis of Professor", 
+                                                "Collaboration Network"])
+    # Side Bar Selectionsto display different pages
+    if selection == "Profile Home":
+        display_home(prof,background)
+        display_publications(prof)
+    elif selection == "Publications Visualisations":
+        st.title("Publications Visualisations")
+        display_publications_visualisations(prof)
+    elif selection == "Analysis of Professor":
+        display_analysis(prof)
+    elif selection == "Collaboration Network":
+        display_network(prof)
+elif menu_selection == "SCSE Profile":
+    st.sidebar.subheader("SCSE Faculty Navigation")
+    scse_menu_selection = st.sidebar.radio("Go To", ["Profile Home", "Collaboration Network"])
+    if scse_menu_selection == "Profile Home":
+        st.header("SCSE Profile Page")
+        pub_dict = count_total_SCSE_pubs()
+        labels = list(pub_dict.keys())
+        values = list(pub_dict.values())
+        # Sliders to adjust chart parameters
+        bargap = st.slider('Bar Gap', min_value=0.0, max_value=0.5, value=0.1, step=0.05)
+        height= st.slider('Chart Height', min_value=100, max_value=800, value=400, step=50)
+        # Create a bar chart using Plotly Express
+        fig = px.bar(x=labels, y=values, title='Total Publications in SCSE', labels={'x': 'Years', 'y': 'Publications Count'})
+        # Customize the layout of the chart
+        fig.update_layout(
+            bargap=bargap,  # Adjust the gap between bars
+            height = height
+        )
+        # Display the chart in Streamlit
+        st.plotly_chart(fig)
+
+        # Word Cloud of Research Interests
+        st.subheader("WordCloud of Research Interests of SCSE Members")
+        df = pd.DataFrame(list(scse_interests.values()), columns=['Research Interests'])
+        # Concatenate all research interests into a single string
+        all_interests = " ".join(df['Research Interests'])
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_interests)
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis("off")
+        st.pyplot(plt)
+    
+        st.subheader("Compare Researchers")
+        col1, col2 = st.columns(2)
+        with col1:
+            comp_prof = st.selectbox('Research Profile 1:', sorted_df['Full Name'])
+            publications1 = load_pickle(f'publication_set/publications_{comp_prof}.pkl')
+            subtopic = pubs_count_subtopic(publications1)
+        with col2:
+            comp_prof2 = st.selectbox('Research Profile 2:', sorted_df['Full Name'])
+            publications2 = load_pickle(f'publication_set/publications_{comp_prof2}.pkl')
+            subtopic2 = pubs_count_subtopic(publications2)
+        bargap= st.slider('Bar Gap', key = 'comp1' ,min_value=0.0, max_value=0.5, value=0.1, step=0.05)
+        height= st.slider('Chart Height', key = 'comph1',min_value=100, max_value=800, value=400, step=50)
+        selection = st.selectbox("Select an option:",
+                                ["View Citations Count Plot", "View Publication Count Plot", "View Type of Publications Count Plot",
+                                "View Quality of Venues Plot"])
+        st.subheader(f"Researcher Profile {comp_prof}")
+        display_publications_visualisations_scse(comp_prof, bargap, height, selection = selection)
+        subtopic_data = [(category, value) for category, value in subtopic.items()]
+        # Create a Plotly bar chart
+        fig = px.bar(subtopic_data, x=1, y=0, labels={'0': 'Category', '1': 'Count'})
+        st.plotly_chart(fig)
+        st.subheader(f"Researcher Profile {comp_prof2}")
+        display_publications_visualisations_scse(comp_prof2, bargap, height,selection = selection)
+        # Convert the dictionary to a list of tuples for easier plotting
+        subtopic_data_2 = [(category, value) for category, value in subtopic2.items()]
+        # Create a Plotly bar chart
+        fig = px.bar(subtopic_data_2, x=1, y=0, labels={'0': 'Category', '1': 'Count'})
+        st.plotly_chart(fig)
+        
+        
+    elif scse_menu_selection == "Collaboration Network":
+        st.header("Compare Researchers Collaborations")
+        col1, col2 = st.columns(2)
+        with col1:
+            comp_prof = st.selectbox('Research Profile 1:', sorted_df['Full Name'])
+            dblp_name = match_fullname_to_dblp(df,comp_prof)
+        G = create_scse_graph(dblp_name, True)
+        G.save_graph('scse_network_comp.html')
+        HtmlFile = open('scse_network_st.html', 'r', encoding='utf-8')
+        components.html(HtmlFile.read(), height=800, width = 1000)
+        with col2:
+            comp_prof2 = st.selectbox('Research Profile 2:', sorted_df['Full Name'])
+            dblp_name2 = match_fullname_to_dblp(df,comp_prof2)
+        G = create_scse_graph(dblp_name2, True)
+        G.save_graph('scse_network_comp2.html')
+        HtmlFile = open('scse_network_comp2.html', 'r', encoding='utf-8')
+        components.html(HtmlFile.read(), height=800, width = 1000)
+
+
