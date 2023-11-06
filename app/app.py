@@ -86,7 +86,7 @@ def display_home(prof, background):
     st.image('ntulogo.png', width=650)
     profile_col , profile_col2 = st.columns(2)
     with profile_col:
-        st.image(f'profile_pics/{prof}.jpg', width = 300)
+        st.image(f'profile_pics/{prof}.jpg', width = 250)
     butcol1, butcol2, butcol3 = st.columns(3)
     with butcol1:
         if 'DR-NTU URL' in df.columns:
