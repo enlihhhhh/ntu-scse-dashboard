@@ -84,23 +84,28 @@ def get_rank(venue):
 def display_home(prof, background):
     # Display profile
     st.image('ntulogo.png', width=650)
-    if 'DR-NTU URL' in df.columns:
-            dr_ntu_url = df.loc[df['Full Name'] == prof, 'DR-NTU URL'].values[0]
-            if dr_ntu_url:
-                if st.button(f"DR-NTU Link"):
-                    webbrowser.open_new_tab(dr_ntu_url)
-    
-    if 'Google Scholar URL' in df.columns:
-        google_scholar_url = df.loc[df['Full Name'] == prof, 'Google Scholar URL'].values[0]
-        if google_scholar_url:
-            if st.button(f"Google Scholar Link"):
-                webbrowser.open_new_tab(google_scholar_url)
-    
-    if 'Website URL' in df.columns:
-        website_url = df.loc[df['Full Name'] == prof, 'Website URL'].values[0]
-        if website_url:
-            if st.button(f"Personal Website Link"):
-                webbrowser.open_new_tab(website_url)
+    profile_col , profile_col2 = st.columns(2)
+    with profile_col:
+        st.image(f'profile_pics/{prof}.jpg', width = 300)
+    butcol1, butcol2, butcol3 = st.columns(3)
+    with butcol1:
+        if 'DR-NTU URL' in df.columns:
+                dr_ntu_url = df.loc[df['Full Name'] == prof, 'DR-NTU URL'].values[0]
+                if dr_ntu_url:
+                    if st.button(f"DR-NTU Link"):
+                        webbrowser.open_new_tab(dr_ntu_url)
+    with butcol2:
+        if 'Google Scholar URL' in df.columns:
+            google_scholar_url = df.loc[df['Full Name'] == prof, 'Google Scholar URL'].values[0]
+            if google_scholar_url:
+                if st.button(f"Google Scholar Link"):
+                    webbrowser.open_new_tab(google_scholar_url)
+    with butcol3:
+        if 'Website URL' in df.columns:
+            website_url = df.loc[df['Full Name'] == prof, 'Website URL'].values[0]
+            if website_url:
+                if st.button(f"Personal Website Link"):
+                    webbrowser.open_new_tab(website_url)
     profile_container = st.container()
     profile_container.title(prof)
     profile_container.subheader('Biography')
