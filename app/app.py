@@ -113,7 +113,7 @@ def display_home(prof, background):
     col1, col2 = profile_container.columns([3,2])
     # Second Column
     with col1:
-        st.subheader('Education')
+        st.subheader('Education 📚')
         education = load_pickle(f'education_set/education_{prof}.pkl')
         for key in education:
             level_of_education = key['Level of Education']
@@ -124,10 +124,10 @@ def display_home(prof, background):
             st.write(f'Attained at: {attained_at}')
             st.write("\n")
     with col2:
-        st.subheader('Research Interest')
+        st.subheader('Research Interest 🧐')
         research = load_pickle(f'research_interest_set/interest_{prof}.pkl')
         st.write(research)
-        st.subheader("Citations (Cited By)")
+        st.subheader("Citations (Cited By) 𐕯")
         st.write(no_citations)
     
 
