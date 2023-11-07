@@ -107,7 +107,7 @@ def display_home(prof, background):
                 if st.button(f"Personal Website Link"):
                     webbrowser.open_new_tab(website_url)
     profile_container = st.container()
-    profile_container.title(prof)
+    profile_container.title(prof 😚)
     profile_container.subheader('Biography')
     profile_container.write(background)
     col1, col2 = profile_container.columns([3,2])
