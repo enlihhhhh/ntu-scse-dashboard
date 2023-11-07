@@ -134,8 +134,8 @@ def display_home(prof, background):
 def display_publication_details(publication):
     # Create a DataFrame from the list of dictionaries
     df = pd.DataFrame(publication)
-    # Join authors into a single string
-    st.dataframe(df, width=1000)
+    # Display the DataFrame with a specified width
+    st.dataframe(df, use_container_width=True)
 
 def display_publications(prof):
     # Display profile
@@ -143,14 +143,23 @@ def display_publications(prof):
     profile_container.title('Publications')
     publications = load_pickle(f'publication_set/publications_{prof}.pkl')
     # Create a select box to choose between "View All" and "View by Topic"
-    selection = st.selectbox("Select an option:", ["View All", "View by Topic", "View by Year"])
+    selection = st.selectbox("Select an option:", ["View All", "View Selected Publication", "View by Topic", "View by Year"])
     #st.selectbox('Choose your publication to display', publications)
     if selection == "View All":
         display_publication_details(publications)
+    elif selection == "View Selected Publication":
+        # Create a selection box to choose a publication
+        selected_publication = st.selectbox('Select a Publication', [publication['title'] for publication in publications])
+        # Find the selected publication by its title
+        selected_publication_info = next((publication for publication in publications if publication['title'] == selected_publication), None)
+        if selected_publication_info:
+            # Create a DataFrame from the modified publication information
+            pub_info = pd.DataFrame([selected_publication_info])
+            st.dataframe(pub_info, use_container_width=True)
+
     elif selection == "View by Topic":
             topics = list(set([publication["subcategory"] for publication in publications]))
             selected_topic = st.multiselect("Select a topic to filter:", topics)
-            
             selected_publications = [publication for publication in publications if publication["subcategory"] in selected_topic]
             display_publication_details(selected_publications)
     elif selection == "View by Year":
@@ -467,13 +476,12 @@ def match_fullname_to_dblp(df, full_name):
 
 # Displaying the temporal characteristics of the professor
 def display_analysis(prof):
-    st.title("Analysis of " + str(prof))
+    st.title("Shift of Interest of " + str(prof))
     publications = load_pickle(f"publication_set/publications_{prof}.pkl")
     interest_counts = pubs_count_interests(publications)
-    st.write(f"The following chart shows the Stacked Bar Chart of publications categorised by Subcategories and Year, this helps us visualise the shift in interest for {prof} over the years in research.")
     # Display the chart in Streamlit
     st.plotly_chart(bar_shift_interest(interest_counts))
-    st.write(f"The following chart shows the Heatmap of publications categorised by Subcategories and Year, this helps us visualise the shift in interest for {prof} over the years in research.")
+    st.write(f"The following chart shows the Stacked Bar Chart of publications categorised by Subcategories and Year, this helps us visualise the shift in interest for {prof} over the years in research.")
     data = interest_counts
     # Extract years and categories from the data
     years = list(set(year for year, _ in data.keys()))
@@ -500,10 +508,12 @@ def display_analysis(prof):
     ))
 
     # Customize the layout of the chart
+    fig.update_layout(title_text='HeatMap of Publications by Year and Category')
     fig.update_yaxes(title_text='Category')
     fig.update_xaxes(title_text='Year')
     # Display the heatmap in Streamlit
     st.plotly_chart(fig)
+    st.write(f"The following chart shows the Heatmap of publications categorised by Subcategories and Year, this helps us visualise the shift in interest for {prof} over the years in research.")
 
 # Function to find researchers with common research interests with a given researcher
 def find_common_interests(selected_prof, specified_interest):
@@ -684,9 +694,9 @@ def top_authors():
 
     # Find the top 10 authors with the most 'A' or 'A*' publications
     top_10_authors = sorted(author_counts, key=author_counts.get, reverse=True)[:10]
-    for i, author in enumerate(top_10_authors, start=1):
-        st.write(f"{i}. {author}: {author_counts[author]} 'A' or 'A*' publications")
-    return top_10_authors
+    # Create a DataFrame to display the top authors and their publication counts
+    top_authors_df = pd.DataFrame({'Professor': top_10_authors, 'A* / A Publication Count': [author_counts[author] for author in top_10_authors]})
+    return top_authors_df
 
 def top_venues():
 # Create a dictionary to store the publication counts for each venue
@@ -712,12 +722,9 @@ def top_venues():
 
     # Find the top publication venues based on the number of 'A' or 'A*' publications
     top_venues = sorted(venue_counts, key=venue_counts.get, reverse=True)[:10]
-
-    # Print the top venues and their publication counts
-    for i, venue in enumerate(top_venues, start=1):
-        count = venue_counts[venue]
-        st.write(f"{i}. {venue}: {count} 'A' or 'A*' publications")
-    return top_venues
+     # Create a DataFrame to display the top venues and their publication counts
+    top_venues_df = pd.DataFrame({'Venue': top_venues, 'A*/ A Publication Count': [venue_counts[venue] for venue in top_venues]})
+    return top_venues_df
 
 # Main Page Content 
 df = pd.read_csv('Lye_En_Lih_updated.csv')
@@ -733,8 +740,7 @@ if menu_selection == "Individual Faculty Profile":
     prof = st.sidebar.selectbox('Research Profile:', sorted_df['Full Name'])
     prof_index, background, research_interest,  no_citations = prof_profile(prof)
     st.sidebar.subheader("Individual Faculty Navigation")
-    selection = st.sidebar.radio("Go To", ["Profile Home", "Analysis of Professor", 
-                                                "Collaboration Network"])
+    selection = st.sidebar.radio("Go To", ["Profile Home", "Collaboration Network"])
     # Side Bar Selectionsto display different pages
     if selection == "Profile Home":
         display_home(prof,background)
@@ -746,9 +752,8 @@ if menu_selection == "Individual Faculty Profile":
         fig = px.bar(subtopic_data, x=1, y=0, labels={'0': 'Category', '1': 'Count'})
         st.subheader(f"Interested Topics of Publications")
         st.plotly_chart(fig)
-        st.subheader("Visualisations")
+        st.subheader("Publication Visualisations")
         display_publications_visualisations(prof)
-    elif selection == "Analysis of Professor":
         display_analysis(prof)
     elif selection == "Collaboration Network":
         display_network(prof)
@@ -789,16 +794,14 @@ elif menu_selection == "SCSE Profile":
         st.plotly_chart(fig1)
 
         # Top Venues and Professors
-        st.subheader('Top 10 Professors / Venues of Publications in SCSE')
-        col1, col2 = st.columns(2)
+        st.subheader('Top Performing Professors in SCSE 🥇')
         # Top 10 Professors
-        with col1:
-            top_authors()
-        with col2:
-            top_venues()
+        st.dataframe(top_authors(), use_container_width=True)
+        st.subheader('Top Ranked Venues 🥇')
+        st.dataframe(top_venues(), use_container_width=True)
 
         # Word Cloud of Research Interests
-        st.subheader("WordCloud of Research Interests of SCSE Members")
+        st.subheader("Research Interests of SCSE Members")
         df = pd.DataFrame(list(scse_interests.values()), columns=['Research Interests'])
         # Concatenate all research interests into a single string
         all_interests = " ".join(df['Research Interests'])
@@ -807,7 +810,7 @@ elif menu_selection == "SCSE Profile":
         plt.axis("off")
         st.pyplot(plt)
     
-        st.subheader("Compare Researchers")
+        st.subheader("Compare Between Researchers")
         col1, col2 = st.columns(2)
         with col1:
             comp_prof = st.selectbox('Research Profile 1:', sorted_df['Full Name'])
