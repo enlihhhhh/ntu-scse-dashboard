@@ -127,7 +127,7 @@ def display_home(prof, background):
         st.subheader('Research Interest 🧐')
         research = load_pickle(f'research_interest_set/interest_{prof}.pkl')
         st.write(research)
-        st.subheader("Citations (Cited By) 𐕯")
+        st.subheader("Citations (Cited By) 📇")
         st.write(no_citations)
     
 
